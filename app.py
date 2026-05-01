@@ -545,7 +545,7 @@ with st.sidebar:
 # ─────────────────────────────────────────────
 st.markdown("""
 <div class="agri-header">
-  <div class="agri-title">🌱 Agri<span>Sense</span> AI</div>
+  <div class="agri-title">🌱 Agro<span>Intel</div>
   <div class="agri-subtitle">Smart Agriculture Decision System — Powered by Random Forest & Real Indian Agro-Climate Data</div>
   <div class="header-pills">
     <span class="hpill hpill-green">Random Forest ML</span>
