@@ -5,6 +5,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -12,63 +13,395 @@ warnings.filterwarnings("ignore")
 # Page Config
 # ─────────────────────────────────────────────
 st.set_page_config(
-    page_title="AI Smart Agriculture",
-    page_icon="🌱",
+    page_title="AgriSense AI",
+    page_icon="🌾",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ─────────────────────────────────────────────
-# Custom CSS
+# Premium CSS — Dark professional theme
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
-    .main { background-color: #f4f9f4; }
-    .stButton > button {
-        background-color: #2e7d32;
-        color: white;
-        border-radius: 8px;
-        padding: 0.5rem 2rem;
-        font-size: 1rem;
-        font-weight: bold;
-        border: none;
-        width: 100%;
-    }
-    .stButton > button:hover { background-color: #1b5e20; }
-    .metric-card {
-        background: white;
-        padding: 1rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        text-align: center;
-        margin-bottom: 1rem;
-    }
-    .crop-badge {
-        background: linear-gradient(135deg, #2e7d32, #66bb6a);
-        color: white;
-        padding: 1rem 2rem;
-        border-radius: 12px;
-        text-align: center;
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin: 1rem 0;
-    }
-    .region-card {
-        background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
-        border-left: 4px solid #2e7d32;
-        padding: 0.8rem 1rem;
-        border-radius: 8px;
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-    }
-    h1 { color: #1b5e20; }
-    h2, h3 { color: #2e7d32; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ── BASE ── */
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif !important;
+}
+.stApp {
+    background: #0f1a0f;
+    color: #e8f0e8;
+}
+.main .block-container {
+    padding: 1.5rem 2rem 3rem 2rem;
+    max-width: 1400px;
+}
+
+/* ── SIDEBAR ── */
+[data-testid="stSidebar"] {
+    background: #0a120a !important;
+    border-right: 1px solid #1e3a1e;
+}
+[data-testid="stSidebar"] .stMarkdown h1,
+[data-testid="stSidebar"] .stMarkdown h2,
+[data-testid="stSidebar"] .stMarkdown h3 {
+    color: #4ade80 !important;
+}
+[data-testid="stSidebarContent"] {
+    background: #0a120a;
+}
+
+/* ── HEADER BANNER ── */
+.agri-header {
+    background: linear-gradient(135deg, #0a2a0a 0%, #0f3d1a 50%, #0a2a0a 100%);
+    border: 1px solid #1e4a1e;
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+.agri-header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(74,222,128,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.agri-header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 30%;
+    width: 300px; height: 100px;
+    background: radial-gradient(ellipse, rgba(34,197,94,0.06) 0%, transparent 70%);
+}
+.agri-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.03em;
+    margin: 0;
+    line-height: 1.1;
+}
+.agri-title span { color: #4ade80; }
+.agri-subtitle {
+    font-size: 0.88rem;
+    color: #6a9a6a;
+    margin-top: 0.4rem;
+    font-weight: 400;
+}
+.header-pills {
+    display: flex;
+    gap: 8px;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+.hpill {
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+.hpill-green { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.25); color: #4ade80; }
+.hpill-blue  { background: rgba(56,189,248,0.1);  border: 1px solid rgba(56,189,248,0.2);  color: #38bdf8; }
+.hpill-gold  { background: rgba(251,191,36,0.1);  border: 1px solid rgba(251,191,36,0.2);  color: #fbbf24; }
+
+/* ── SECTION LABELS ── */
+.sec-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #4a6a4a;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.sec-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #1e3a1e;
+}
+
+/* ── STAT CARDS ── */
+.stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+.stat-card {
+    background: #111f11;
+    border: 1px solid #1e3a1e;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    position: relative;
+    overflow: hidden;
+}
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+}
+.stat-card.green::before { background: linear-gradient(90deg, #16a34a, #4ade80); }
+.stat-card.blue::before  { background: linear-gradient(90deg, #0284c7, #38bdf8); }
+.stat-card.gold::before  { background: linear-gradient(90deg, #b45309, #fbbf24); }
+.stat-card.rose::before  { background: linear-gradient(90deg, #be185d, #fb7185); }
+.stat-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #4a6a4a;
+    margin-bottom: 0.3rem;
+}
+.stat-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+.stat-value.green { color: #4ade80; }
+.stat-value.gold  { color: #fbbf24; }
+.stat-sub {
+    font-size: 0.7rem;
+    color: #4a6a4a;
+    margin-top: 0.2rem;
+}
+
+/* ── REGION CARD ── */
+.region-info-card {
+    background: linear-gradient(135deg, #111f11, #0f1f0f);
+    border: 1px solid #1e4a1e;
+    border-left: 3px solid #4ade80;
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: #8aaa8a;
+}
+.region-info-card b { color: #c8e6c8; }
+
+/* ── CROP BANNER ── */
+.crop-winner {
+    background: linear-gradient(135deg, #052010 0%, #0a3a18 40%, #052010 100%);
+    border: 1px solid #1e5a1e;
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    margin: 1rem 0;
+    position: relative;
+    overflow: hidden;
+}
+.crop-winner::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -10%;
+    width: 120%; height: 200%;
+    background: radial-gradient(ellipse at center, rgba(74,222,128,0.08) 0%, transparent 60%);
+}
+.crop-winner-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #4ade80;
+    margin-bottom: 0.4rem;
+}
+.crop-winner-name {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+}
+.crop-winner-meta {
+    font-size: 0.82rem;
+    color: #6aaa6a;
+    margin-top: 0.3rem;
+}
+
+/* ── RANK CARDS ── */
+.rank-card {
+    background: #111f11;
+    border: 1px solid #1e3a1e;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.rank-card.top { border-color: #16a34a; background: linear-gradient(135deg, #0a2a12, #111f11); }
+.rank-badge {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 800;
+    flex-shrink: 0;
+}
+.rank-badge.r1 { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+.rank-badge.r2 { background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+.rank-badge.r3 { background: rgba(180,83,9,0.12); color: #fb923c; border: 1px solid rgba(180,83,9,0.2); }
+.rank-body { flex: 1; }
+.rank-name { font-size: 0.95rem; font-weight: 700; color: #e8f0e8; margin-bottom: 2px; }
+.rank-conf { font-size: 0.75rem; color: #4ade80; font-weight: 600; }
+.rank-price { font-size: 0.72rem; color: #4a6a4a; }
+.rank-bar-bg { height: 3px; background: #1e3a1e; border-radius: 2px; margin-top: 6px; }
+.rank-bar-fg { height: 3px; border-radius: 2px; }
+
+/* ── SOIL HEALTH ── */
+.soil-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: #111f11;
+    border: 1px solid #1e3a1e;
+    border-radius: 8px;
+    margin-bottom: 0.4rem;
+    font-size: 0.82rem;
+}
+.soil-ok    { border-left: 3px solid #4ade80; }
+.soil-warn  { border-left: 3px solid #fbbf24; }
+.soil-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+.soil-badge.ok   { background: rgba(74,222,128,0.1); color: #4ade80; }
+.soil-badge.warn { background: rgba(251,191,36,0.1); color: #fbbf24; }
+
+/* ── PROFIT METRICS ── */
+.profit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.6rem;
+    margin: 0.5rem 0;
+}
+.profit-item {
+    background: #111f11;
+    border: 1px solid #1e3a1e;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    text-align: center;
+}
+.profit-lbl { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #4a6a4a; margin-bottom: 0.25rem; }
+.profit-val { font-size: 1.1rem; font-weight: 800; color: #4ade80; }
+
+/* ── AI SUMMARY BOX ── */
+.ai-summary {
+    background: linear-gradient(135deg, #0a1a12, #0f2a1a);
+    border: 1px solid #1e4a2a;
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    position: relative;
+}
+.ai-summary::before {
+    content: '🤖';
+    position: absolute;
+    top: -12px; left: 20px;
+    background: #0a1a12;
+    padding: 0 8px;
+    font-size: 1.2rem;
+}
+.ai-tag {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #4ade80;
+    margin-bottom: 0.75rem;
+}
+.ai-text {
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: #9aba9a;
+}
+.ai-text b { color: #c8e6c8; }
+.ai-text .hi { color: #4ade80; font-weight: 600; }
+
+/* ── COMPARISON TABLE ── */
+.compare-wrap {
+    background: #0a120a;
+    border: 1px solid #1e3a1e;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+/* ── STREAMLIT OVERRIDES ── */
+div[data-testid="stMetric"] {
+    background: #111f11;
+    border: 1px solid #1e3a1e;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+}
+div[data-testid="stMetricValue"] { color: #4ade80 !important; font-weight: 800 !important; }
+div[data-testid="stMetricLabel"] { color: #4a6a4a !important; font-size: 0.75rem !important; }
+
+div[data-testid="stSelectbox"] > div > div {
+    background: #111f11 !important;
+    border-color: #1e3a1e !important;
+    color: #e8f0e8 !important;
+    border-radius: 8px !important;
+}
+div[data-testid="stSlider"] { color: #4a6a4a; }
+
+.stButton > button {
+    background: linear-gradient(135deg, #15803d, #16a34a) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 0.65rem 2rem !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    width: 100% !important;
+    letter-spacing: 0.01em !important;
+    transition: opacity 0.15s !important;
+}
+.stButton > button:hover { opacity: 0.88 !important; }
+
+.stInfo, .stSuccess, .stWarning {
+    border-radius: 10px !important;
+    border: none !important;
+}
+
+div[data-testid="stExpander"] {
+    background: #111f11 !important;
+    border: 1px solid #1e3a1e !important;
+    border-radius: 10px !important;
+}
+div[data-testid="stExpander"] summary {
+    color: #8aaa8a !important;
+    font-size: 0.85rem !important;
+}
+
+.stDataFrame { border-radius: 10px !important; overflow: hidden; }
+
+h1, h2, h3 { color: #c8e6c8 !important; font-weight: 700 !important; letter-spacing: -0.02em !important; }
+p, li { color: #8aaa8a; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #0a120a; }
+::-webkit-scrollbar-thumb { background: #1e3a1e; border-radius: 3px; }
 </style>
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# Region Data — Indian States
-# N, P, K, temperature, humidity, ph, rainfall
+# Region Data
 # ─────────────────────────────────────────────
 REGION_DATA = {
     "-- Select a Region --":         None,
@@ -115,9 +448,7 @@ def load_data():
 
 @st.cache_resource
 def train_model(_X, _y):
-    X_train, X_test, y_train, y_test = train_test_split(
-        _X, _y, test_size=0.2, random_state=42
-    )
+    X_train, X_test, y_train, y_test = train_test_split(_X, _y, test_size=0.2, random_state=42)
     clf = RandomForestClassifier(n_estimators=100, random_state=42)
     clf.fit(X_train, y_train)
     train_acc   = clf.score(X_train, y_train)
@@ -146,65 +477,122 @@ y = data["label"]
 model, train_acc, test_acc, report, feature_importances = train_model(X, y)
 
 # ─────────────────────────────────────────────
-# Sidebar
+# Chart helper — dark theme
+# ─────────────────────────────────────────────
+BG    = "#0f1a0f"
+BG2   = "#111f11"
+GRID  = "#1e3a1e"
+GREEN = "#4ade80"
+GREENS = ["#4ade80","#22c55e","#16a34a","#86efac","#bbf7d0"]
+MULTI  = ["#4ade80","#38bdf8","#fbbf24","#fb923c","#a78bfa","#fb7185","#34d399"]
+
+def dark_fig(w, h):
+    fig, ax = plt.subplots(figsize=(w, h))
+    fig.patch.set_facecolor(BG)
+    ax.set_facecolor(BG2)
+    ax.tick_params(colors="#4a6a4a", labelsize=8)
+    ax.spines["bottom"].set_color(GRID)
+    ax.spines["left"].set_color(GRID)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.grid(axis="y", color=GRID, linewidth=0.5, alpha=0.7)
+    return fig, ax
+
+# ─────────────────────────────────────────────
+# SIDEBAR
 # ─────────────────────────────────────────────
 with st.sidebar:
-    st.header("📊 Model Overview")
-    st.metric("Train Accuracy", f"{round(train_acc * 100, 2)}%",
-              help="Score on training data — expected to be high")
-    st.metric("Test Accuracy ✅", f"{round(test_acc * 100, 2)}%",
-              help="Score on unseen 20% hold-out data — this is the REAL accuracy")
-    st.caption("ℹ️ 80/20 Train-Test Split | RandomForest(n=100, random_state=42)")
+    st.markdown("""
+    <div style='text-align:center;padding:0.5rem 0 1rem 0'>
+      <div style='font-size:1.5rem'>🌾</div>
+      <div style='font-size:1rem;font-weight:800;color:#e8f0e8;letter-spacing:-0.02em'>AgriSense AI</div>
+      <div style='font-size:0.68rem;color:#4a6a4a;letter-spacing:0.08em;text-transform:uppercase'>Smart Crop Intelligence</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
+    st.markdown('<div class="sec-label">Model Performance</div>', unsafe_allow_html=True)
+
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.metric("Train Acc", f"{round(train_acc*100,1)}%",
+                  help="Score on training data")
+    with col_b:
+        st.metric("Test Acc ✅", f"{round(test_acc*100,1)}%",
+                  help="Score on unseen 20% hold-out — the real accuracy")
+
     if train_acc == 1.0:
-        st.warning("Train = 100% is normal for Random Forest. **Test Accuracy** is what counts.")
+        st.caption("ℹ️ Train = 100% is normal for Random Forest. Test Accuracy is what counts.")
+
     st.divider()
-    st.metric("Total Samples",  data.shape[0])
-    st.metric("Crops Covered",  y.nunique())
-    st.metric("Features Used",  X.shape[1])
+    st.markdown('<div class="sec-label">Dataset Info</div>', unsafe_allow_html=True)
+    c1, c2, c3 = st.columns(3)
+    with c1: st.metric("Samples", data.shape[0])
+    with c2: st.metric("Crops",   y.nunique())
+    with c3: st.metric("Features", X.shape[1])
+
     st.divider()
-    st.subheader("📁 Dataset Preview")
-    st.dataframe(data.head(5), use_container_width=True)
-    st.divider()
-    st.subheader("🌾 Crops in Dataset")
+    st.markdown('<div class="sec-label">Crop Distribution</div>', unsafe_allow_html=True)
     crop_counts = y.value_counts().reset_index()
     crop_counts.columns = ["Crop", "Count"]
-    st.dataframe(crop_counts, use_container_width=True, hide_index=True)
+    st.dataframe(crop_counts, use_container_width=True, hide_index=True, height=220)
+
+    st.divider()
+    st.caption("80/20 Train-Test Split · RandomForest n=100")
 
 # ─────────────────────────────────────────────
-# Header
+# HEADER
 # ─────────────────────────────────────────────
-st.title("🌱 AI Smart Agriculture Decision System")
-st.caption("Select a region to auto-fill soil & climate data, then get AI-powered crop recommendations.")
-st.divider()
+st.markdown("""
+<div class="agri-header">
+  <div class="agri-title">🌱 Agri<span>Sense</span> AI</div>
+  <div class="agri-subtitle">Smart Agriculture Decision System — Powered by Random Forest & Real Indian Agro-Climate Data</div>
+  <div class="header-pills">
+    <span class="hpill hpill-green">Random Forest ML</span>
+    <span class="hpill hpill-blue">22+ Crops</span>
+    <span class="hpill hpill-gold">20 Indian Regions</span>
+    <span class="hpill hpill-green">Profit Analysis</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# STEP 1 — Region Selection
+# STEP 1 — Region
 # ─────────────────────────────────────────────
-st.subheader("📍 Step 1: Select Your Region")
+st.markdown('<div class="sec-label">📍 Step 1 — Select Your Region</div>', unsafe_allow_html=True)
+
 selected_region = st.selectbox(
     "Choose an Indian state / region:",
     options=list(REGION_DATA.keys()),
-    index=0
+    index=0,
+    label_visibility="collapsed"
 )
 
 region_info = REGION_DATA[selected_region]
 
 if region_info is None:
-    st.info("👆 Select a region above to auto-fill soil & climate data, or choose **Custom** to enter manually.")
+    st.markdown("""
+    <div style='text-align:center;padding:3rem 1rem;color:#4a6a4a'>
+      <div style='font-size:3rem;opacity:0.3'>🗺️</div>
+      <div style='font-size:1rem;font-weight:600;color:#6a8a6a;margin-top:0.5rem'>Select a region above to begin</div>
+      <div style='font-size:0.82rem;margin-top:0.3rem'>Soil & climate data will auto-fill for your chosen state</div>
+    </div>
+    """, unsafe_allow_html=True)
     st.stop()
 
 is_custom = (region_info == "custom")
 
 # ─────────────────────────────────────────────
-# STEP 2 — Soil & Climate Inputs
+# STEP 2 — Inputs
 # ─────────────────────────────────────────────
-st.subheader("🧪 Step 2: Soil & Environmental Data")
+st.markdown('<div class="sec-label">🧪 Step 2 — Soil & Climate Parameters</div>', unsafe_allow_html=True)
 
 if not is_custom:
+    zone = region_info['zone']
     st.markdown(f"""
-    <div class="region-card">
-        📌 <b>{selected_region}</b> — Climate Zone: <b>{region_info['zone']}</b><br>
-        Values auto-filled from average regional soil & climate data. Fine-tune with the sliders if needed.
+    <div class="region-info-card">
+      📌 <b>{selected_region}</b> &nbsp;·&nbsp; Climate Zone: <b>{zone}</b><br>
+      <span style='font-size:0.78rem'>Values auto-filled from average regional soil & climate data — fine-tune with sliders if needed.</span>
     </div>
     """, unsafe_allow_html=True)
     defaults = region_info
@@ -216,10 +604,10 @@ else:
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.markdown("**🌿 Soil Nutrients**")
-    N        = st.slider("Nitrogen (N)",     0,    140,  int(defaults["N"]),            help="Nitrogen content in soil (kg/ha)")
-    P        = st.slider("Phosphorus (P)",   5,    145,  int(defaults["P"]),            help="Phosphorus content in soil (kg/ha)")
-    K        = st.slider("Potassium (K)",    5,    205,  int(defaults["K"]),            help="Potassium content in soil (kg/ha)")
+    st.markdown("**🌿 Soil Nutrients (kg/ha)**")
+    N        = st.slider("Nitrogen (N)",    0,   140, int(defaults["N"]),            help="Nitrogen content in soil")
+    P        = st.slider("Phosphorus (P)",  5,   145, int(defaults["P"]),            help="Phosphorus content in soil")
+    K        = st.slider("Potassium (K)",   5,   205, int(defaults["K"]),            help="Potassium content in soil")
 
 with col2:
     st.markdown("**🌡️ Climate Conditions**")
@@ -230,20 +618,31 @@ with col2:
 with col3:
     st.markdown("**🧂 Soil pH**")
     ph = st.slider("pH Value", 3.5, 10.0, float(defaults["ph"]), step=0.1,
-                   help="Soil acidity/alkalinity (ideal: 5.5–7.5)")
-    st.markdown("**pH Guide:**")
-    st.markdown("🔴 < 5.5 → Acidic")
-    st.markdown("🟢 5.5–7.5 → Optimal")
-    st.markdown("🟠 > 7.5 → Alkaline")
+                   help="Soil acidity/alkalinity — ideal range: 5.5–7.5")
+    # pH visual gauge
+    ph_pct = (ph - 3.5) / (10.0 - 3.5) * 100
+    ph_color = "#4ade80" if 5.5 <= ph <= 7.5 else "#fbbf24" if ph < 5.5 else "#fb923c"
+    ph_label = "Optimal ✅" if 5.5 <= ph <= 7.5 else ("Acidic ⚠️" if ph < 5.5 else "Alkaline ⚠️")
+    st.markdown(f"""
+    <div style='margin-top:0.5rem'>
+      <div style='display:flex;justify-content:space-between;font-size:0.72rem;color:#4a6a4a;margin-bottom:4px'>
+        <span>Acidic (3.5)</span><span>Neutral</span><span>Alkaline (10)</span>
+      </div>
+      <div style='height:6px;background:#1e3a1e;border-radius:3px;overflow:hidden'>
+        <div style='height:6px;width:{ph_pct:.1f}%;background:{ph_color};border-radius:3px;transition:width 0.3s'></div>
+      </div>
+      <div style='font-size:0.78rem;color:{ph_color};font-weight:600;margin-top:5px'>{ph:.1f} — {ph_label}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.divider()
+st.markdown("<br>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# STEP 3 — Predict
+# STEP 3 — Predict Button
 # ─────────────────────────────────────────────
-st.subheader("🚀 Step 3: Get AI Recommendation")
+st.markdown('<div class="sec-label">🚀 Step 3 — Get AI Recommendation</div>', unsafe_allow_html=True)
 
-if st.button("🌾 Analyze & Recommend Crop for This Region"):
+if st.button("🌾 Analyse & Recommend Crop for This Region"):
     input_data = pd.DataFrame(
         [[N, P, K, temp, humidity, ph, rainfall]],
         columns=X.columns
@@ -254,96 +653,191 @@ if st.button("🌾 Analyze & Recommend Crop for This Region"):
         probs      = model.predict_proba(input_data)[0]
         classes    = model.classes_
         top3_idx   = np.argsort(probs)[-3:][::-1]
+        top5_idx   = np.argsort(probs)[-5:][::-1]
         region_label = selected_region if not is_custom else "Custom Region"
+        conf_pct   = round(probs[top3_idx[0]] * 100, 1)
 
-        # Banner
-        st.markdown(
-            f'<div class="crop-badge">🌾 Best Crop for {region_label}: {prediction.upper()}</div>',
-            unsafe_allow_html=True
-        )
+        # ── Profit calc
+        yield_per_ha = (rainfall * 0.008) + (temp * 0.05) + (N * 0.02)
+        price        = MARKET_PRICE.get(prediction.lower(), 15)
+        profit       = yield_per_ha * price * 1000
 
-        left, right = st.columns([1, 1.5])
+        # ── WINNER BANNER
+        st.markdown(f"""
+        <div class="crop-winner">
+          <div class="crop-winner-label">🏆 Best Crop Recommendation for {region_label}</div>
+          <div class="crop-winner-name">🌾 {prediction.upper()}</div>
+          <div class="crop-winner-meta">{conf_pct}% confidence &nbsp;·&nbsp; ₹{price}/kg market price &nbsp;·&nbsp; Est. profit ₹{round(profit):,}/ha</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # ── STAT ROW
+        zone_label = region_info.get("zone", "Custom") if not is_custom else "Custom"
+        st.markdown(f"""
+        <div class="stat-row">
+          <div class="stat-card green">
+            <div class="stat-label">Confidence</div>
+            <div class="stat-value green">{conf_pct}%</div>
+            <div class="stat-sub">Model certainty</div>
+          </div>
+          <div class="stat-card gold">
+            <div class="stat-label">Market Price</div>
+            <div class="stat-value gold">₹{price}</div>
+            <div class="stat-sub">Per kilogram</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">Est. Profit</div>
+            <div class="stat-value" style="color:#38bdf8;font-size:1.3rem">₹{round(profit/1000,1)}k</div>
+            <div class="stat-sub">Per hectare</div>
+          </div>
+          <div class="stat-card rose">
+            <div class="stat-label">Climate Zone</div>
+            <div class="stat-value" style="color:#fb7185;font-size:1rem">{zone_label}</div>
+            <div class="stat-sub">{region_label.split('(')[0].strip() if not is_custom else 'Custom'}</div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # ── TWO COLUMN LAYOUT
+        left, right = st.columns([1, 1.5], gap="large")
 
         with left:
-            st.subheader("🏆 Top 3 Crop Recommendations")
-            medals = ["🥇", "🥈", "🥉"]
+            # Top 3 Crops
+            st.markdown('<div class="sec-label">🏆 Top 3 Crop Recommendations</div>', unsafe_allow_html=True)
+            medals     = ["🥇", "🥈", "🥉"]
+            rank_cls   = ["r1", "r2", "r3"]
+            top_colors = ["#fbbf24", "#94a3b8", "#fb923c"]
             for rank, i in enumerate(top3_idx):
-                conf  = round(probs[i] * 100, 2)
-                price = MARKET_PRICE.get(classes[i].lower(), 15)
+                cname = classes[i].capitalize()
+                conf  = round(probs[i] * 100, 1)
+                cprice = MARKET_PRICE.get(classes[i].lower(), 15)
+                is_top = rank == 0
+                bar_color = top_colors[rank]
                 st.markdown(f"""
-                <div class="metric-card">
-                    {medals[rank]} <b>{classes[i].capitalize()}</b><br>
-                    <span style="color:#2e7d32;font-size:1.1rem">{conf}% confidence</span><br>
-                    <span style="color:#555;font-size:0.85rem">₹{price}/kg market price</span>
+                <div class="rank-card {'top' if is_top else ''}">
+                  <div class="rank-badge {rank_cls[rank]}">{medals[rank]}</div>
+                  <div class="rank-body">
+                    <div class="rank-name">{cname}</div>
+                    <div class="rank-conf">{conf}% confidence</div>
+                    <div class="rank-price">₹{cprice}/kg market price</div>
+                    <div class="rank-bar-bg">
+                      <div class="rank-bar-fg" style="width:{conf}%;background:{bar_color}"></div>
+                    </div>
+                  </div>
                 </div>
                 """, unsafe_allow_html=True)
 
-            st.subheader("💰 Profit Estimation")
-            yield_per_ha = (rainfall * 0.008) + (temp * 0.05) + (N * 0.02)
-            price        = MARKET_PRICE.get(prediction.lower(), 15)
-            profit       = yield_per_ha * price * 1000
-            st.metric("Estimated Yield (kg/ha)",  f"{round(yield_per_ha * 1000, 1)}")
-            st.metric("Market Price (₹/kg)",       f"₹ {price}")
-            st.metric("Estimated Profit (₹/ha)",   f"₹ {round(profit, 2):,}")
+            st.markdown("<br>", unsafe_allow_html=True)
 
-            st.subheader("🌱 Soil Health Insight")
-            if ph < 5.5:
-                st.warning("⚠️ Acidic soil. Add agricultural lime to raise pH.")
-            elif ph > 7.5:
-                st.warning("⚠️ Alkaline soil. Add sulfur or organic compost to lower pH.")
-            else:
-                st.success("✅ Soil pH is optimal (5.5–7.5).")
-            if N < 20: st.warning("⚠️ Low Nitrogen — apply urea or compost.")
-            if P < 10: st.warning("⚠️ Low Phosphorus — apply superphosphate.")
-            if K < 10: st.warning("⚠️ Low Potassium — apply potassium chloride.")
+            # Profit Breakdown
+            st.markdown('<div class="sec-label">💰 Profit Estimation</div>', unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class="profit-grid">
+              <div class="profit-item">
+                <div class="profit-lbl">Yield</div>
+                <div class="profit-val">{round(yield_per_ha*1000,0):.0f}</div>
+                <div style='font-size:0.65rem;color:#4a6a4a'>kg/ha</div>
+              </div>
+              <div class="profit-item">
+                <div class="profit-lbl">Price</div>
+                <div class="profit-val">₹{price}</div>
+                <div style='font-size:0.65rem;color:#4a6a4a'>per kg</div>
+              </div>
+              <div class="profit-item">
+                <div class="profit-lbl">Profit</div>
+                <div class="profit-val">₹{round(profit/1000,1)}k</div>
+                <div style='font-size:0.65rem;color:#4a6a4a'>per ha</div>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown("<br>", unsafe_allow_html=True)
+
+            # Soil Health
+            st.markdown('<div class="sec-label">🌱 Soil Health Analysis</div>', unsafe_allow_html=True)
+
+            def soil_row(label, ok, ok_msg, warn_msg):
+                cls = "soil-ok" if ok else "soil-warn"
+                badge_cls = "ok" if ok else "warn"
+                badge_txt = "Good" if ok else "Action needed"
+                msg = ok_msg if ok else warn_msg
+                st.markdown(f"""
+                <div class="soil-row {cls}">
+                  <span style="font-size:0.82rem;color:#8aaa8a">{label}: {msg}</span>
+                  <span class="soil-badge {badge_cls}">{badge_txt}</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+            soil_row("pH",       5.5 <= ph <= 7.5,  f"{ph:.1f} — Optimal", f"{ph:.1f} — {'Add lime ↑' if ph<5.5 else 'Add sulfur ↓'}")
+            soil_row("Nitrogen", N >= 20,             f"N={N} kg/ha",         f"N={N} — Apply urea/compost")
+            soil_row("Phosphorus", P >= 10,           f"P={P} kg/ha",         f"P={P} — Apply superphosphate")
+            soil_row("Potassium", K >= 10,            f"K={K} kg/ha",         f"K={K} — Apply KCl")
+            soil_row("Rainfall", rainfall >= 50,      f"{rainfall} mm — Adequate", f"{rainfall} mm — Consider irrigation")
+            soil_row("Temperature", 15 <= temp <= 38, f"{temp}°C — Suitable", f"{temp}°C — Stress conditions")
 
         with right:
-            # Input bar chart
-            st.subheader("📊 Region Parameter Overview")
-            labels = ["N", "P", "K", "Temp", "Humidity", "pH", "Rainfall"]
-            values = [N, P, K, temp, humidity, ph, rainfall]
-            colors = ["#4caf50","#66bb6a","#a5d6a7","#1976d2","#42a5f5","#ff7043","#26c6da"]
-            fig1, ax1 = plt.subplots(figsize=(6, 3.5))
-            bars = ax1.bar(labels, values, color=colors, edgecolor="white")
-            for bar, val in zip(bars, values):
-                ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5,
-                         str(val), ha="center", va="bottom", fontsize=8)
-            ax1.set_facecolor("#f4f9f4"); fig1.patch.set_facecolor("#f4f9f4")
-            ax1.set_title(f"Inputs — {region_label}", fontsize=10, fontweight="bold")
-            plt.xticks(rotation=15, fontsize=8); plt.tight_layout()
+            # Parameter Bar Chart
+            st.markdown('<div class="sec-label">📊 Region Parameter Overview</div>', unsafe_allow_html=True)
+            labels = ["N", "P", "K", "Temp", "Humidity", "pH×10", "Rain/10"]
+            values = [N, P, K, temp, humidity, ph*10, rainfall/10]
+            raw    = [N, P, K, temp, humidity, ph, rainfall]
+            raw_labels = ["N","P","K","Temp°C","Humidity%","pH","Rainfall mm"]
+
+            fig1, ax1 = dark_fig(6, 3.2)
+            bars = ax1.bar(raw_labels, raw, color=MULTI[:7], edgecolor=BG, linewidth=0.8, width=0.6, zorder=3)
+            for bar, val in zip(bars, raw):
+                ax1.text(bar.get_x()+bar.get_width()/2, bar.get_height()+0.5,
+                         str(round(val,1)), ha="center", va="bottom", fontsize=7.5, color="#6aaa6a")
+            ax1.set_title(f"Soil & Climate — {region_label.split('(')[0].strip()}", fontsize=9, fontweight="bold", color="#8aaa8a", pad=8)
+            ax1.tick_params(axis='x', rotation=15)
+            plt.tight_layout()
             st.pyplot(fig1)
+            plt.close(fig1)
 
-            # Feature importance
-            st.subheader("🔍 Feature Importance")
-            fig3, ax3 = plt.subplots(figsize=(6, 3))
-            fi_colors = ["#2e7d32" if v == feature_importances.max() else "#81c784"
-                         for v in feature_importances.values]
-            ax3.barh(feature_importances.index[::-1], feature_importances.values[::-1],
-                     color=fi_colors[::-1], edgecolor="white")
-            ax3.set_xlabel("Importance Score", fontsize=9)
-            ax3.set_title("Which factors drive the prediction?", fontsize=10, fontweight="bold")
-            ax3.set_facecolor("#f4f9f4"); fig3.patch.set_facecolor("#f4f9f4")
-            plt.tight_layout(); st.pyplot(fig3)
+            # Feature Importance
+            st.markdown('<div class="sec-label">🔍 Feature Importance</div>', unsafe_allow_html=True)
+            fig3, ax3 = dark_fig(6, 2.8)
+            fi_rev = feature_importances[::-1]
+            fi_colors = [GREEN if v == feature_importances.max() else "#22c55e" if v >= feature_importances.median() else "#166534"
+                         for v in fi_rev.values]
+            bars3 = ax3.barh(fi_rev.index, fi_rev.values, color=fi_colors, edgecolor=BG, linewidth=0.5, height=0.6, zorder=3)
+            for bar, val in zip(bars3, fi_rev.values):
+                ax3.text(val+0.002, bar.get_y()+bar.get_height()/2,
+                         f"{val:.3f}", va="center", fontsize=7.5, color="#6aaa6a")
+            ax3.set_xlabel("Importance Score", fontsize=8, color="#4a6a4a")
+            ax3.set_title("Which factors drive the prediction?", fontsize=9, fontweight="bold", color="#8aaa8a", pad=8)
+            ax3.grid(axis="x", color=GRID, linewidth=0.5, alpha=0.7)
+            ax3.grid(axis="y", visible=False)
+            plt.tight_layout()
+            st.pyplot(fig3)
+            plt.close(fig3)
 
-            # Top 5 probability
-            st.subheader("📈 Crop Probability Breakdown")
-            top5_idx    = np.argsort(probs)[-5:][::-1]
+            # Top 5 Probability
+            st.markdown('<div class="sec-label">📈 Crop Probability Breakdown</div>', unsafe_allow_html=True)
             top5_labels = [classes[i].capitalize() for i in top5_idx]
             top5_probs  = [probs[i] * 100 for i in top5_idx]
-            fig2, ax2 = plt.subplots(figsize=(6, 3))
-            colors2 = ["#2e7d32" if i == 0 else "#81c784" for i in range(len(top5_labels))]
-            ax2.barh(top5_labels[::-1], top5_probs[::-1], color=colors2[::-1], edgecolor="white")
-            for i, val in enumerate(top5_probs[::-1]):
-                ax2.text(val + 0.3, i, f"{round(val,1)}%", va="center", fontsize=8)
-            ax2.set_xlabel("Confidence (%)", fontsize=9)
-            ax2.set_title("Top 5 Crop Probabilities", fontsize=10, fontweight="bold")
-            ax2.set_facecolor("#f4f9f4"); fig2.patch.set_facecolor("#f4f9f4")
-            plt.tight_layout(); st.pyplot(fig2)
 
-        # ── Multi-Region Comparison Table
-        st.divider()
-        st.subheader("🗺️ Multi-Region Crop Comparison")
-        st.caption("AI predictions for all regions — see how crop recommendations vary across India.")
+            fig2, ax2 = dark_fig(6, 2.8)
+            colors2 = [GREEN if i == 0 else GREENS[min(i,4)] for i in range(len(top5_labels))]
+            bars2 = ax2.barh(top5_labels[::-1], top5_probs[::-1],
+                             color=colors2[::-1], edgecolor=BG, linewidth=0.5, height=0.55, zorder=3)
+            for i, val in enumerate(top5_probs[::-1]):
+                ax2.text(val+0.4, i, f"{round(val,1)}%", va="center", fontsize=7.5, color="#6aaa6a")
+            ax2.set_xlabel("Confidence (%)", fontsize=8, color="#4a6a4a")
+            ax2.set_title("Top 5 Crop Probabilities", fontsize=9, fontweight="bold", color="#8aaa8a", pad=8)
+            ax2.set_xlim(0, max(top5_probs)*1.15)
+            ax2.grid(axis="x", color=GRID, linewidth=0.5, alpha=0.7)
+            ax2.grid(axis="y", visible=False)
+            plt.tight_layout()
+            st.pyplot(fig2)
+            plt.close(fig2)
+
+        # ── Multi-Region Comparison
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown('<div class="sec-label">🗺️ Multi-Region Crop Comparison (All India)</div>', unsafe_allow_html=True)
+        st.caption("AI predictions across all 20 Indian regions — your selected region is highlighted.")
 
         compare_rows = []
         for rname, rdata in REGION_DATA.items():
@@ -362,12 +856,12 @@ if st.button("🌾 Analyze & Recommend Crop for This Region"):
             for p in ["🌾 ","🌿 ","🌴 ","🏔️ "]:
                 clean_name = clean_name.replace(p, "")
             compare_rows.append({
-                "Region":               clean_name,
-                "Zone":                 rdata["zone"],
-                "Recommended Crop":     r_pred.capitalize(),
-                "Confidence (%)":       r_conf,
-                "Market Price (₹/kg)":  r_price,
-                "Est. Profit (₹/ha)":   f"₹{int(r_profit):,}"
+                "Region":              clean_name,
+                "Zone":                rdata["zone"],
+                "Recommended Crop":    r_pred.capitalize(),
+                "Confidence (%)":      r_conf,
+                "Market Price (₹/kg)": r_price,
+                "Est. Profit (₹/ha)":  f"₹{int(r_profit):,}"
             })
 
         compare_df = pd.DataFrame(compare_rows)
@@ -376,35 +870,38 @@ if st.button("🌾 Analyze & Recommend Crop for This Region"):
             clean = selected_region
             for p in ["🌾 ","🌿 ","🌴 ","🏔️ "]:
                 clean = clean.replace(p, "")
-            return (["background-color: #c8e6c9"] * len(row)
+            return (["background-color: #0a2a12; color: #4ade80"] * len(row)
                     if row["Region"] in clean else [""] * len(row))
 
         st.dataframe(
             compare_df.style.apply(highlight_selected, axis=1),
-            use_container_width=True, hide_index=True
+            use_container_width=True, hide_index=True, height=400
         )
 
         # ── AI Summary
-        st.divider()
-        st.subheader("🤖 AI Recommendation Summary")
+        st.markdown("<br>", unsafe_allow_html=True)
         nutrient_status     = "adequate" if N >= 20 and P >= 10 and K >= 10 else "partially deficient"
         climate_suitability = "favorable" if 20 <= temp <= 35 and humidity >= 50 else "moderate"
-        zone_label          = region_info.get("zone", "Custom") if not is_custom else "Custom"
+        top2_name  = classes[top3_idx[1]].capitalize() if len(top3_idx) > 1 else "—"
+        top2_conf  = round(probs[top3_idx[1]] * 100, 1) if len(top3_idx) > 1 else 0
 
-        st.info(f"""
-**Region:** {region_label}  |  **Climate Zone:** {zone_label}
-**Recommended Crop:** {prediction.capitalize()}
-
-The AI model analyzed **{len(classes)} crop types** and identified **{prediction.capitalize()}**
-as the most profitable crop for **{region_label}** with **{round(probs[top3_idx[0]] * 100, 1)}% confidence**.
-
-- 🌡️ Climate conditions are **{climate_suitability}** for crop growth.
-- 🌿 Soil nutrients are **{nutrient_status}**.
-- 💧 Rainfall: **{rainfall} mm** | Temperature: **{temp}°C**
-- 💰 Estimated profit: **₹{round(profit, 2):,}/ha** under current regional conditions.
-
-> Validate with actual soil test reports from your local agricultural office for production use.
-        """)
+        st.markdown(f"""
+        <div class="ai-summary">
+          <div class="ai-tag">🤖 AI Recommendation Summary</div>
+          <div class="ai-text">
+            The Random Forest model analysed <b>{len(classes)} crop varieties</b> using 7 soil & climate features
+            and identified <span class="hi">{prediction.capitalize()}</span> as the optimal crop for
+            <b>{region_label}</b> with <span class="hi">{conf_pct}% confidence</span>.<br><br>
+            <b>Key findings:</b><br>
+            🌡️ Climate conditions are <b>{climate_suitability}</b> — temperature {temp}°C, humidity {humidity}%, rainfall {rainfall} mm.<br>
+            🌿 Soil nutrient levels are <b>{nutrient_status}</b> (N={N}, P={P}, K={K} kg/ha).<br>
+            🧂 Soil pH is <b>{"optimal (5.5–7.5)" if 5.5<=ph<=7.5 else f"{'acidic' if ph<5.5 else 'alkaline'} at {ph} — amendment recommended"}</b>.<br>
+            💰 Estimated profit of <span class="hi">₹{round(profit):,}/ha</span> based on current market price of ₹{price}/kg.<br>
+            🥈 Runner-up: <b>{top2_name}</b> at {top2_conf}% confidence — viable alternative if market prices shift.<br><br>
+            <span style='font-size:0.78rem;color:#4a6a4a'>⚠ Validate with actual soil test reports from your local agricultural office before production decisions.</span>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     except Exception as e:
         st.error(f"❌ Prediction Error: {e}")
@@ -412,17 +909,18 @@ as the most profitable crop for **{region_label}** with **{round(probs[top3_idx[
 # ─────────────────────────────────────────────
 # Expanders
 # ─────────────────────────────────────────────
-with st.expander("⚙️ Debug Info"):
+st.markdown("<br>", unsafe_allow_html=True)
+with st.expander("⚙️ Debug Info & Dataset Preview"):
     st.write("**Dataset Shape:**", data.shape)
     st.write("**Columns:**", list(data.columns))
-    st.dataframe(y.value_counts().reset_index().rename(columns={"index": "Crop", "label": "Count"}))
+    st.dataframe(data.head(8), use_container_width=True)
 
 with st.expander("📋 Full Model Classification Report (Test Set)"):
     st.caption("Precision, Recall, F1-Score per crop — evaluated on 20% unseen test data")
-    report_df = pd.DataFrame(report).T.round(2)
+    report_df = pd.DataFrame(report).T.round(3)
     st.dataframe(report_df, use_container_width=True)
     st.caption(
         f"✅ Test Accuracy: **{round(test_acc*100,2)}%** | "
         f"Train Accuracy: **{round(train_acc*100,2)}%** | "
-        f"Split: 80% train / 20% test"
+        f"Split: 80% train / 20% test | Algorithm: RandomForest(n_estimators=100)"
     )
