@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 # Page Config
 # ─────────────────────────────────────────────
 st.set_page_config(
-    page_title="AgriSense AI",
+    page_title="AgroIntel",
     page_icon="🌾",
     layout="wide",
     initial_sidebar_state="expanded"
